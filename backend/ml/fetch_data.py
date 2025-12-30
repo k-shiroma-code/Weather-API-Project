@@ -1,87 +1,119 @@
-import requests
 import pandas as pd
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
-def fetch_tokyo_weather():
+def load_california_data(csv_path="data/raw/california_load_raw.csv"):
     """
-    Fetch historical weather data from Open-Meteo Historical Forecast API for Tokyo
-    Saves raw data to CSV file
+    Load California electricity + weather data from Kaggle CSV (Database.csv)
+    
+    Dataset contains hourly observations with:
+    - Time: timestamp
+    - Season: 1-4 (Winter, Spring, Summer, Autumn)
+    - Day_of_the_week: 0-6 (Monday-Sunday)
+    - DHI, DNI, GHI: Solar radiation (W/m2)
+    - Wind_speed: m/s
+    - Humidity: %
+    - Temperature: degrees (°C)
+    - PV_production: Solar production (MW)
+    - Wind_production: Wind production (MW)
+    - Electric_demand: Electricity demand (MW) - TARGET
     """
-    print("🌍 Fetching historical weather data for Tokyo...")
-    
-    url = "https://historical-forecast-api.open-meteo.com/v1/forecast"
-    
-    # Fetch data in smaller chunks to avoid timeout
-    all_data = []
-    start_date = datetime(2020, 1, 1)
-    end_date = datetime(2024, 12, 23)
-    current_date = start_date
-    
-    # Fetch in 3-month chunks
-    chunk_size = 90
+    print("=" * 80)
+    print("📂 CALIFORNIA GRID LOAD FORECASTING - DATA LOADER")
+    print("=" * 80)
     
     try:
-        while current_date < end_date:
-            chunk_end = min(current_date + timedelta(days=chunk_size), end_date)
-            
-            print(f"Fetching {current_date.date()} to {chunk_end.date()}...")
-            
-            params = {
-                "latitude": 35.6895,
-                "longitude": 139.6917,
-                "start_date": current_date.strftime("%Y-%m-%d"),
-                "end_date": chunk_end.strftime("%Y-%m-%d"),
-                "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max",
-                "timezone": "Asia/Tokyo"
-            }
-            
-            response = requests.get(url, params=params, timeout=30)
-            response.raise_for_status()
-            data = response.json()
-            
-            # Convert to DataFrame
-            df_chunk = pd.DataFrame({
-                "date": pd.to_datetime(data["daily"]["time"]),
-                "temp_max": data["daily"]["temperature_2m_max"],
-                "temp_min": data["daily"]["temperature_2m_min"],
-                "precipitation": data["daily"]["precipitation_sum"],
-                "wind_speed_max": data["daily"]["wind_speed_10m_max"]
-            })
-            
-            all_data.append(df_chunk)
-            current_date = chunk_end + timedelta(days=1)
+        print(f"\n📂 Loading data from: {csv_path}")
+        df = pd.read_csv(csv_path)
         
-        # Combine all chunks
-        df = pd.concat(all_data, ignore_index=True)
+        print(f"✅ Data loaded successfully!\n")
         
-        # Calculate mean temperature
-        df["temp_mean"] = (df["temp_max"] + df["temp_min"]) / 2
+        # Display basic info
+        print(f"📊 Dataset Shape: {df.shape[0]:,} rows × {df.shape[1]} columns")
+        print(f"⏰ Hourly observations: {len(df):,}")
         
-        # Set date as index
-        df.set_index("date", inplace=True)
+        # Convert Time to datetime
+        if 'Time' in df.columns:
+            df['Time'] = pd.to_datetime(df['Time'])
+            date_min = df['Time'].min()
+            date_max = df['Time'].max()
+            print(f"📅 Date range: {date_min} to {date_max}")
+            print(f"📈 Duration: {(date_max - date_min).days} days (~{(date_max - date_min).days / 365:.1f} years)")
         
-        # Create directory if it doesn't exist
-        os.makedirs("data/raw", exist_ok=True)
+        # Display all columns
+        print(f"\n📋 Available Columns ({df.shape[1]}):")
+        for i, col in enumerate(df.columns, 1):
+            dtype = df[col].dtype
+            non_null = df[col].notna().sum()
+            print(f"   {i:2d}. {col:30s} ({dtype}, {non_null:,} non-null values)")
         
-        # Save raw data
-        csv_path = "data/raw/tokyo_weather_raw.csv"
-        df.to_csv(csv_path)
+        # Check for missing values
+        print(f"\n🔍 Missing Values:")
+        missing_count = df.isnull().sum()
+        if missing_count.sum() == 0:
+            print("   ✅ No missing values detected!")
+        else:
+            missing_pct = (missing_count / len(df)) * 100
+            for col in missing_count[missing_count > 0].index:
+                print(f"   ⚠️  {col}: {missing_count[col]:,} ({missing_pct[col]:.2f}%)")
         
-        print(f"\n✅ Data fetched successfully!")
-        print(f"📊 Shape: {df.shape}")
-        print(f"📅 Date range: {df.index.min()} to {df.index.max()}")
-        print(f"💾 Saved to: {csv_path}")
-        print(f"\nFirst 5 rows:\n{df.head()}")
+        # Statistics for key columns
+        print(f"\n📊 Data Summary (Key Variables):")
+        key_cols = ['Electric_demand', 'Temperature', 'Humidity', 'Wind_speed']
+        available_cols = [col for col in key_cols if col in df.columns]
+        if available_cols:
+            print(df[available_cols].describe().round(2))
+        
+        # Check target variable
+        if 'Electric_demand' in df.columns:
+            demand = df['Electric_demand']
+            print(f"\n🎯 TARGET VARIABLE - Electricity Demand (MW):")
+            print(f"   Min:  {demand.min():,.2f} MW")
+            print(f"   Max:  {demand.max():,.2f} MW")
+            print(f"   Mean: {demand.mean():,.2f} MW")
+            print(f"   Std:  {demand.std():,.2f} MW")
+        
+        # Create processed directory
+        os.makedirs("data/processed", exist_ok=True)
+        
+        # Save processed version
+        processed_path = "data/processed/california_data_processed.csv"
+        df.to_csv(processed_path, index=False)
+        print(f"\n💾 Processed data saved to: {processed_path}")
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("✅ DATA LOADING COMPLETE")
+        print("=" * 80)
+        print(f"\n📌 Next Steps:")
+        print(f"   1. Run EDA analysis:  python eda.py")
+        print(f"   2. Build SARIMA model: python sarima_model.py")
+        print(f"   3. Deploy to production")
         
         return df
         
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Error fetching data: {e}")
+    except FileNotFoundError:
+        print(f"\n❌ ERROR: File not found!")
+        print(f"   Expected path: {csv_path}")
+        print(f"\n📥 Please ensure your Kaggle CSV is in the correct location:")
+        print(f"   1. Download 'Database.csv' from Kaggle")
+        print(f"   2. Copy to: {csv_path}")
+        print(f"\n💡 Command to copy from Downloads (macOS/Linux):")
+        print(f"   mkdir -p data/raw")
+        print(f"   cp ~/Downloads/Database.csv {csv_path}")
+        print(f"\n💡 Command (Windows):")
+        print(f"   mkdir data\\raw")
+        print(f"   copy %USERPROFILE%\\Downloads\\Database.csv {csv_path}")
         return None
+        
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"\n❌ ERROR: {e}")
         return None
 
+
 if __name__ == "__main__":
-    fetch_tokyo_weather()
+    # Load the data
+    df = load_california_data()
+    
+    if df is not None:
+        print("\n🚀 Data is ready for analysis!")

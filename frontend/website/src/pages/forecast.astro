@@ -8,8 +8,8 @@ import Forecast from "../components/Forecast.jsx";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="SARIMA ML forecast for Tokyo weather with 14-day predictions" />
-    <title>ML Forecast - SARIMA Weather Predictions</title>
+    <meta name="description" content="14-day grid load forecasting for Southern California Edison using machine learning" />
+    <title>Grid Load Forecast - SCE California</title>
     <style>
       * {
         margin: 0;
@@ -18,7 +18,7 @@ import Forecast from "../components/Forecast.jsx";
       }
 
       body {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0f0f23 100%);
         color: #f0f0f0;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
         line-height: 1.6;
@@ -30,20 +30,22 @@ import Forecast from "../components/Forecast.jsx";
       }
 
       .container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
       }
 
       .page-header {
         text-align: center;
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #333;
       }
 
       h1 {
-        font-size: clamp(1.8rem, 4vw, 3rem);
+        font-size: clamp(1.6rem, 4vw, 2.5rem);
         font-weight: 700;
-        margin-bottom: 1rem;
-        background: linear-gradient(135deg, #3b82f6, #0ea5e9);
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #f59e0b, #eab308, #fbbf24);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -51,38 +53,26 @@ import Forecast from "../components/Forecast.jsx";
 
       .subtitle {
         font-size: 1rem;
-        color: #cbd5e1;
-        margin-bottom: 0.5rem;
-      }
-
-      .description {
-        font-size: 0.95rem;
         color: #94a3b8;
         max-width: 600px;
-        margin: 1rem auto 0;
+        margin: 0 auto;
       }
 
-      .breadcrumb {
+      .tech-badges {
         display: flex;
         gap: 0.5rem;
         justify-content: center;
-        margin-bottom: 2rem;
-        font-size: 0.9rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
       }
 
-      .breadcrumb a {
-        color: #0ea5e9;
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-
-      .breadcrumb a:hover {
-        color: #3b82f6;
-        text-decoration: underline;
-      }
-
-      .breadcrumb span {
-        color: #64748b;
+      .badge {
+        padding: 0.3rem 0.7rem;
+        background: rgba(245, 158, 11, 0.15);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: #fcd34d;
       }
 
       @media (max-width: 768px) {
@@ -91,11 +81,11 @@ import Forecast from "../components/Forecast.jsx";
         }
 
         h1 {
-          font-size: 1.8rem;
+          font-size: 1.5rem;
         }
 
         .page-header {
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
         }
       }
     </style>
@@ -104,22 +94,19 @@ import Forecast from "../components/Forecast.jsx";
     <Header client:load />
     <main>
       <div class="container">
-        <!-- Page Header -->
         <div class="page-header">
-          <h1>🔮 SARIMA Forecast</h1>
-          <p class="subtitle">AI-Powered Weather Predictions for Tokyo</p>
-          <p class="description">
-            Advanced SARIMA model trained on 3 years of historical data to
-            predict temperature trends with 95% confidence intervals
+          <h1>⚡ California Grid Load Forecast</h1>
+          <p class="subtitle">
+            14-day electricity demand predictions for SCE using ensemble ML models
           </p>
-          <div class="breadcrumb">
-            <a href="/">Home</a>
-            <span>/</span>
-            <span>ML Forecast</span>
+          <div class="tech-badges">
+            <span class="badge">Gradient Boosting</span>
+            <span class="badge">Random Forest</span>
+            <span class="badge">5-Fold CV</span>
+            <span class="badge">2.26% MAPE</span>
           </div>
         </div>
 
-        <!-- Forecast Component -->
         <Forecast client:load />
       </div>
     </main>

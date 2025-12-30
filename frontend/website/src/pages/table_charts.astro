@@ -3,16 +3,112 @@ import Header from "../components/Header.jsx";
 import Table_Charts from "../components/Table_Charts.jsx";
 ---
 
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Data Table & Charts</title>
+    <meta name="description" content="Global weather data with 7-day forecasts, temperature charts, and detailed weather tables" />
+    <title>Global Weather Dashboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0f0f23 100%);
+        color: #f0f0f0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        line-height: 1.6;
+      }
+
+      main {
+        min-height: 100vh;
+        padding: 2rem;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #333;
+      }
+
+      h1 {
+        font-size: clamp(1.6rem, 4vw, 2.5rem);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #f59e0b, #eab308, #fbbf24);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .subtitle {
+        font-size: 1rem;
+        color: #94a3b8;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .tech-badges {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+      }
+
+      .badge {
+        padding: 0.3rem 0.7rem;
+        background: rgba(245, 158, 11, 0.15);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: #fcd34d;
+      }
+
+      @media (max-width: 768px) {
+        main {
+          padding: 1rem;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        .page-header {
+          margin-bottom: 1.5rem;
+        }
+      }
+    </style>
   </head>
-  <body style="background-color:#121212;color:#f0f0f0;font-family:Arial,sans-serif;">
+  <body>
     <Header client:load />
     <main>
-      <Table_Charts client:load />
+      <div class="container">
+        <div class="page-header">
+          <h1>🌍 Global Weather Dashboard</h1>
+          <p class="subtitle">
+            Real-time weather data for any city worldwide with 7-day forecasts
+          </p>
+          <div class="tech-badges">
+            <span class="badge">Open-Meteo API</span>
+            <span class="badge">7-Day Forecast</span>
+            <span class="badge">°C / °F Toggle</span>
+            <span class="badge">Interactive Charts</span>
+          </div>
+        </div>
+
+        <Table_Charts client:load />
+      </div>
     </main>
   </body>
 </html>

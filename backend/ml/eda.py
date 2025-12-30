@@ -2,129 +2,136 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
-from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.tsa.stattools import adfuller
+import os
 
 # Set style
 sns.set_style("darkgrid")
 plt.rcParams['figure.figsize'] = (14, 6)
 
-def load_raw_data():
-    """Load raw weather data"""
-    print("📂 Loading raw data...")
-    df = pd.read_csv("data/raw/tokyo_weather_raw.csv", index_col="date", parse_dates=True)
-    print(f"✅ Loaded {len(df)} records")
+def load_data():
+    """Load processed California data"""
+    print("\n" + "=" * 80)
+    print("📊 EXPLORATORY DATA ANALYSIS - CALIFORNIA GRID LOAD FORECASTING")
+    print("=" * 80)
+    
+    df = pd.read_csv('data/processed/california_data_processed.csv')
+    df['Time'] = pd.to_datetime(df['Time'])
+    df = df.sort_values('Time').reset_index(drop=True)
+    
+    print(f"\n✅ Data loaded: {len(df):,} observations")
     return df
 
-def check_missing_values(df):
-    """Check for missing values"""
-    print("\n🔍 Checking for missing values...")
-    missing = df.isnull().sum()
-    if missing.sum() == 0:
-        print("✅ No missing values!")
-    else:
-        print(f"⚠️  Missing values:\n{missing}")
-    return missing
-
-def fill_missing_values(df):
-    """Fill missing values using forward fill"""
-    print("\n🔧 Filling missing values...")
-    df = df.fillna(method='ffill').fillna(method='bfill')
-    print("✅ Missing values filled")
-    return df
+def create_figures_dir():
+    """Create figures directory"""
+    os.makedirs('figures', exist_ok=True)
 
 def plot_time_series(df):
-    """Visualize temperature trends"""
-    print("\n📊 Creating time series plots...")
+    """Plot electricity demand over time"""
+    print("\n📈 Creating time series plot...")
     
-    os.makedirs("figures", exist_ok=True)
+    fig, axes = plt.subplots(3, 1, figsize=(14, 10))
     
-    # Plot all variables
-    fig, axes = plt.subplots(3, 2, figsize=(16, 12))
+    # Electricity demand
+    axes[0].plot(df['Time'], df['Electric_demand'], color='#1f77b4', linewidth=0.8)
+    axes[0].set_title('Electricity Demand Over Time', fontsize=12, fontweight='bold')
+    axes[0].set_ylabel('Demand (MW)')
+    axes[0].grid(True, alpha=0.3)
     
-    axes[0, 0].plot(df.index, df['temp_mean'], color='#3b82f6', linewidth=1)
-    axes[0, 0].set_title('Mean Temperature Over Time')
-    axes[0, 0].set_ylabel('Temperature (°C)')
+    # Temperature
+    axes[1].plot(df['Time'], df['Temperature'], color='#ff7f0e', linewidth=0.8)
+    axes[1].set_title('Temperature Over Time', fontsize=12, fontweight='bold')
+    axes[1].set_ylabel('Temperature (°C)')
+    axes[1].grid(True, alpha=0.3)
     
-    axes[0, 1].plot(df.index, df['temp_max'], color='#ef4444', alpha=0.7, label='Max')
-    axes[0, 1].plot(df.index, df['temp_min'], color='#3b82f6', alpha=0.7, label='Min')
-    axes[0, 1].set_title('Daily Temperature Range')
-    axes[0, 1].set_ylabel('Temperature (°C)')
-    axes[0, 1].legend()
-    
-    axes[1, 0].plot(df.index, df['precipitation'], color='#10b981', linewidth=0.8)
-    axes[1, 0].set_title('Daily Precipitation')
-    axes[1, 0].set_ylabel('Precipitation (mm)')
-    
-    axes[1, 1].plot(df.index, df['wind_speed_max'], color='#f59e0b', linewidth=0.8)
-    axes[1, 1].set_title('Wind Speed (Max)')
-    axes[1, 1].set_ylabel('Wind Speed (m/s)')
-    
-    axes[2, 0].plot(df.index, df['precipitation'], color='#8b5cf6', linewidth=0.8)
-    axes[2, 0].set_title('Precipitation')
-    axes[2, 0].set_ylabel('Precipitation (mm)')
-    
-    axes[2, 1].remove()
+    # Solar + Wind Production
+    axes[2].plot(df['Time'], df['PV_production'], label='Solar', color='#2ca02c', linewidth=0.8)
+    axes[2].plot(df['Time'], df['Wind_production'], label='Wind', color='#d62728', linewidth=0.8)
+    axes[2].set_title('Solar & Wind Production Over Time', fontsize=12, fontweight='bold')
+    axes[2].set_ylabel('Production (MW)')
+    axes[2].set_xlabel('Time')
+    axes[2].legend()
+    axes[2].grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('figures/01_time_series.png', dpi=100, bbox_inches='tight')
+    plt.savefig('figures/01_time_series.png', dpi=300, bbox_inches='tight')
     print("✅ Saved: figures/01_time_series.png")
     plt.close()
 
 def plot_seasonal_decomposition(df):
-    """Plot seasonal patterns"""
-    print("\n📈 Creating seasonal decomposition plot...")
+    """Decompose time series into components"""
+    print("\n📉 Creating seasonal decomposition plot...")
     
-    from statsmodels.tsa.seasonal import seasonal_decompose
+    # Use daily averages for cleaner decomposition
+    df_daily = df.set_index('Time')['Electric_demand'].resample('D').mean()
     
-    decomposition = seasonal_decompose(df['temp_mean'], model='additive', period=365)
+    # Perform decomposition
+    decomposition = seasonal_decompose(df_daily, model='additive', period=365)
     
-    fig, axes = plt.subplots(4, 1, figsize=(16, 10))
+    fig, axes = plt.subplots(4, 1, figsize=(14, 10))
     
-    decomposition.observed.plot(ax=axes[0], color='#3b82f6')
-    axes[0].set_title('Observed')
-    axes[0].set_ylabel('Temperature (°C)')
+    axes[0].plot(decomposition.observed, color='#1f77b4')
+    axes[0].set_title('Observed (Daily Average)', fontweight='bold')
+    axes[0].set_ylabel('Demand (MW)')
+    axes[0].grid(True, alpha=0.3)
     
-    decomposition.trend.plot(ax=axes[1], color='#ef4444')
-    axes[1].set_title('Trend')
-    axes[1].set_ylabel('Temperature (°C)')
+    axes[1].plot(decomposition.trend, color='#ff7f0e')
+    axes[1].set_title('Trend', fontweight='bold')
+    axes[1].set_ylabel('Demand (MW)')
+    axes[1].grid(True, alpha=0.3)
     
-    decomposition.seasonal.plot(ax=axes[2], color='#10b981')
-    axes[2].set_title('Seasonal (365-day cycle)')
-    axes[2].set_ylabel('Temperature (°C)')
+    axes[2].plot(decomposition.seasonal, color='#2ca02c')
+    axes[2].set_title('Seasonality (365-day cycle)', fontweight='bold')
+    axes[2].set_ylabel('Demand (MW)')
+    axes[2].grid(True, alpha=0.3)
     
-    decomposition.resid.plot(ax=axes[3], color='#f59e0b')
-    axes[3].set_title('Residual')
-    axes[3].set_ylabel('Temperature (°C)')
+    axes[3].plot(decomposition.resid, color='#d62728')
+    axes[3].set_title('Residuals', fontweight='bold')
+    axes[3].set_ylabel('Demand (MW)')
+    axes[3].set_xlabel('Date')
+    axes[3].grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('figures/02_seasonal_decomposition.png', dpi=100, bbox_inches='tight')
+    plt.savefig('figures/02_seasonal_decomposition.png', dpi=300, bbox_inches='tight')
     print("✅ Saved: figures/02_seasonal_decomposition.png")
     plt.close()
 
 def plot_acf_pacf(df):
-    """Plot ACF and PACF for stationarity analysis"""
-    print("\n📊 Creating ACF/PACF plots...")
+    """Plot ACF and PACF for SARIMA parameter selection"""
+    print("\n🔍 Creating ACF/PACF plots...")
     
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    # Use daily data for cleaner plots
+    daily_demand = df.set_index('Time')['Electric_demand'].resample('D').mean()
     
-    plot_acf(df['temp_mean'].dropna(), lags=40, ax=axes[0])
-    axes[0].set_title('Autocorrelation Function (ACF)')
+    fig, axes = plt.subplots(2, 1, figsize=(14, 8))
     
-    plot_pacf(df['temp_mean'].dropna(), lags=40, ax=axes[1])
-    axes[1].set_title('Partial Autocorrelation Function (PACF)')
+    # ACF
+    plot_acf(daily_demand, lags=60, ax=axes[0], title='Autocorrelation Function (ACF)')
+    axes[0].set_ylabel('ACF')
+    axes[0].grid(True, alpha=0.3)
+    
+    # PACF
+    plot_pacf(daily_demand, lags=60, ax=axes[1], title='Partial Autocorrelation Function (PACF)')
+    axes[1].set_ylabel('PACF')
+    axes[1].set_xlabel('Lags')
+    axes[1].grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('figures/03_acf_pacf.png', dpi=100, bbox_inches='tight')
+    plt.savefig('figures/03_acf_pacf.png', dpi=300, bbox_inches='tight')
     print("✅ Saved: figures/03_acf_pacf.png")
     plt.close()
 
-def stationarity_test(df):
-    """Perform Augmented Dickey-Fuller test"""
-    print("\n🧪 Performing Augmented Dickey-Fuller test...")
+def adf_test(df):
+    """Augmented Dickey-Fuller test for stationarity"""
+    print("\n🧪 Augmented Dickey-Fuller Test:")
+    print("-" * 60)
     
-    result = adfuller(df['temp_mean'].dropna())
+    # Use daily data
+    daily_demand = df.set_index('Time')['Electric_demand'].resample('D').mean()
+    
+    result = adfuller(daily_demand, autolag='AIC')
     
     print(f"ADF Statistic: {result[0]:.6f}")
     print(f"P-value: {result[1]:.6f}")
@@ -133,61 +140,83 @@ def stationarity_test(df):
         print(f"  {key}: {value:.3f}")
     
     if result[1] <= 0.05:
-        print("✅ Data is stationary (p-value <= 0.05)")
+        print("\n✅ Data is STATIONARY (p-value ≤ 0.05)")
+        print("   → Can proceed with ARIMA/SARIMA directly")
     else:
-        print("⚠️  Data is NOT stationary, differencing may be needed")
-    
-    return result
+        print("\n⚠️  Data is NON-STATIONARY (p-value > 0.05)")
+        print("   → Differencing may be needed (d=1 or d=2)")
 
-def print_statistics(df):
-    """Print summary statistics"""
-    print("\n📊 Summary Statistics:")
-    print(df.describe())
+def correlation_analysis(df):
+    """Analyze correlation with demand"""
+    print("\n📊 Correlation with Electricity Demand:")
+    print("-" * 60)
+    
+    corr_cols = ['Temperature', 'Humidity', 'Wind_speed', 'PV_production', 'Wind_production']
+    correlations = df[corr_cols + ['Electric_demand']].corr()['Electric_demand'].drop('Electric_demand')
+    
+    correlations_sorted = correlations.sort_values(ascending=False)
+    
+    for col, corr in correlations_sorted.items():
+        print(f"{col:20s}: {corr:7.4f}")
+    
+    # Plot correlations
+    fig, ax = plt.subplots(figsize=(10, 6))
+    correlations_sorted.plot(kind='barh', ax=ax, color=['green' if x > 0 else 'red' for x in correlations_sorted])
+    ax.set_title('Feature Correlation with Electricity Demand', fontweight='bold', fontsize=12)
+    ax.set_xlabel('Correlation Coefficient')
+    ax.grid(True, alpha=0.3, axis='x')
+    
+    plt.tight_layout()
+    plt.savefig('figures/04_correlation.png', dpi=300, bbox_inches='tight')
+    print("\n✅ Saved: figures/04_correlation.png")
+    plt.close()
 
-def process_and_save(df):
-    """Process and save cleaned data"""
-    print("\n💾 Saving processed data...")
+def plot_demand_by_season(df):
+    """Plot demand patterns by season"""
+    print("\n🌡️  Creating seasonal demand plot...")
     
-    os.makedirs("data/processed", exist_ok=True)
+    fig, ax = plt.subplots(figsize=(12, 6))
     
-    processed_path = "data/processed/tokyo_weather_processed.csv"
-    df.to_csv(processed_path)
-    print(f"✅ Saved to: {processed_path}")
+    season_names = {1: 'Winter', 2: 'Spring', 3: 'Summer', 4: 'Autumn'}
+    colors = {'Winter': '#3b82f6', 'Spring': '#10b981', 'Summer': '#ef4444', 'Autumn': '#f59e0b'}
     
-    return df
+    for season in [1, 2, 3, 4]:
+        season_data = df[df['Season'] == season]['Electric_demand']
+        ax.hist(season_data, bins=30, alpha=0.6, label=season_names[season], color=colors[season_names[season]])
+    
+    ax.set_title('Electricity Demand Distribution by Season', fontweight='bold', fontsize=12)
+    ax.set_xlabel('Demand (MW)')
+    ax.set_ylabel('Frequency')
+    ax.legend()
+    ax.grid(True, alpha=0.3, axis='y')
+    
+    plt.tight_layout()
+    plt.savefig('figures/05_seasonal_demand.png', dpi=300, bbox_inches='tight')
+    print("✅ Saved: figures/05_seasonal_demand.png")
+    plt.close()
 
-def main():
-    """Run complete EDA pipeline"""
-    print("=" * 60)
-    print("EXPLORATORY DATA ANALYSIS - TOKYO WEATHER")
-    print("=" * 60)
+def summary_statistics(df):
+    """Display summary statistics"""
+    print("\n📋 Summary Statistics:")
+    print("-" * 60)
+    print(df[['Temperature', 'Humidity', 'Wind_speed', 'PV_production', 'Wind_production', 'Electric_demand']].describe().round(2))
+
+if __name__ == "__main__":
+    create_figures_dir()
+    df = load_data()
     
-    # Load data
-    df = load_raw_data()
-    
-    # Check missing values
-    check_missing_values(df)
-    
-    # Fill missing values
-    df = fill_missing_values(df)
-    
-    # Print statistics
-    print_statistics(df)
-    
-    # Visualizations
+    print("\n🔍 Running analysis...")
     plot_time_series(df)
     plot_seasonal_decomposition(df)
     plot_acf_pacf(df)
+    adf_test(df)
+    correlation_analysis(df)
+    plot_demand_by_season(df)
+    summary_statistics(df)
     
-    # Stationarity test
-    stationarity_test(df)
-    
-    # Save processed data
-    process_and_save(df)
-    
-    print("\n" + "=" * 60)
-    print("✅ EDA Complete! Check 'figures/' folder for visualizations")
-    print("=" * 60)
-
-if __name__ == "__main__":
-    main()
+    print("\n" + "=" * 80)
+    print("✅ EDA COMPLETE!")
+    print("=" * 80)
+    print("\n📁 Check 'figures/' folder for visualizations")
+    print("\n📌 Next Step: Build SARIMA model")
+    print("   Run: python sarima_model.py")

@@ -7,8 +7,8 @@ import Header from "../components/Header.jsx";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Weather dashboard with real-time data and ML-powered SARIMA forecasts" />
-    <title>Weather Dashboard - Real-Time Forecasts & Analytics</title>
+    <meta name="description" content="Weather and grid load forecasting dashboard with ML-powered predictions" />
+    <title>Weather & Grid Dashboard</title>
     <style>
       * {
         margin: 0;
@@ -17,7 +17,7 @@ import Header from "../components/Header.jsx";
       }
 
       body {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0f0f23 100%);
         color: #f0f0f0;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
         line-height: 1.6;
@@ -43,10 +43,10 @@ import Header from "../components/Header.jsx";
       }
 
       h1 {
-        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-size: clamp(2rem, 5vw, 3rem);
         font-weight: 700;
         margin-bottom: 1rem;
-        background: linear-gradient(135deg, #3b82f6, #0ea5e9);
+        background: linear-gradient(135deg, #f59e0b, #eab308, #fbbf24);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -54,8 +54,7 @@ import Header from "../components/Header.jsx";
 
       .subtitle {
         font-size: 1.1rem;
-        color: #cbd5e1;
-        line-height: 1.8;
+        color: #e2e8f0;
         margin-bottom: 0.5rem;
       }
 
@@ -63,27 +62,28 @@ import Header from "../components/Header.jsx";
         font-size: 0.95rem;
         color: #94a3b8;
         margin-top: 1rem;
+        max-width: 550px;
+        margin-left: auto;
+        margin-right: auto;
       }
 
       .features {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 1.5rem;
         margin: 3rem 0;
       }
 
       .feature-card {
-        background: rgba(30, 41, 59, 0.8);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(59, 130, 246, 0.2);
+        background: rgba(30, 30, 40, 0.8);
+        border: 1px solid rgba(245, 158, 11, 0.2);
         border-radius: 12px;
         padding: 1.5rem;
         transition: all 0.3s ease;
       }
 
       .feature-card:hover {
-        border-color: rgba(59, 130, 246, 0.5);
-        background: rgba(30, 41, 59, 1);
+        border-color: rgba(245, 158, 11, 0.5);
         transform: translateY(-4px);
       }
 
@@ -96,12 +96,41 @@ import Header from "../components/Header.jsx";
         font-size: 1.1rem;
         font-weight: 600;
         margin-bottom: 0.5rem;
-        color: #3b82f6;
+        color: #f59e0b;
       }
 
       .feature-text {
         font-size: 0.9rem;
         color: #cbd5e1;
+        line-height: 1.6;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+        text-align: center;
+      }
+
+      .stat-item {
+        padding: 1rem;
+        background: rgba(245, 158, 11, 0.08);
+        border-radius: 10px;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+      }
+
+      .stat-number {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #f59e0b;
+      }
+
+      .stat-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       .cta-buttons {
@@ -121,56 +150,28 @@ import Header from "../components/Header.jsx";
         transition: all 0.3s ease;
         border: 2px solid;
         cursor: pointer;
-        display: inline-block;
       }
 
       .btn-primary {
-        background: linear-gradient(135deg, #3b82f6, #0ea5e9);
+        background: linear-gradient(135deg, #f59e0b, #d97706);
         color: white;
         border-color: transparent;
       }
 
       .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
       }
 
       .btn-secondary {
         background: transparent;
-        color: #0ea5e9;
-        border-color: #0ea5e9;
+        color: #f59e0b;
+        border-color: #f59e0b;
       }
 
       .btn-secondary:hover {
-        background: rgba(14, 165, 233, 0.1);
+        background: rgba(245, 158, 11, 0.1);
         transform: translateY(-2px);
-      }
-
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1.5rem;
-        margin: 3rem 0;
-        text-align: center;
-      }
-
-      .stat-item {
-        padding: 1.5rem;
-        background: rgba(59, 130, 246, 0.1);
-        border-radius: 12px;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-      }
-
-      .stat-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #3b82f6;
-        margin-bottom: 0.5rem;
-      }
-
-      .stat-label {
-        font-size: 0.9rem;
-        color: #cbd5e1;
       }
 
       .footer-text {
@@ -180,13 +181,54 @@ import Header from "../components/Header.jsx";
         font-size: 0.85rem;
       }
 
+      .glossary {
+        margin: 3rem 0;
+        padding: 2rem;
+        background: rgba(30, 30, 40, 0.6);
+        border: 1px solid #333;
+        border-radius: 12px;
+      }
+
+      .glossary h2 {
+        text-align: center;
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        color: #e2e8f0;
+      }
+
+      .glossary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.25rem;
+      }
+
+      .glossary-item {
+        background: rgba(20, 20, 30, 0.8);
+        padding: 1.25rem;
+        border-radius: 8px;
+        border-left: 3px solid #f59e0b;
+      }
+
+      .glossary-term {
+        font-weight: 600;
+        color: #f59e0b;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+      }
+
+      .glossary-def {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        line-height: 1.6;
+      }
+
       @media (max-width: 640px) {
         main {
           padding: 1rem;
         }
 
         h1 {
-          font-size: 2rem;
+          font-size: 1.75rem;
         }
 
         .cta-buttons {
@@ -197,6 +239,10 @@ import Header from "../components/Header.jsx";
           width: 100%;
           text-align: center;
         }
+
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
       }
     </style>
   </head>
@@ -204,56 +250,54 @@ import Header from "../components/Header.jsx";
     <Header client:load />
     <main>
       <div class="container">
-        <!-- Hero Section -->
         <div class="hero">
-          <h1>🌤️ Weather Dashboard</h1>
-          <p class="subtitle">
-            Real-time weather data meets AI-powered predictions
-          </p>
+          <h1>⚡ Weather & Grid Dashboard</h1>
+          <p class="subtitle">ML-Powered Forecasting</p>
           <p class="description">
-            Explore live weather conditions, interactive charts, and advanced
-            SARIMA forecasts for Tokyo. Built with Open-Meteo API and machine
-            learning.
+            Real-time global weather data and California grid load predictions 
+            using ensemble machine learning models.
           </p>
         </div>
 
-        <!-- Features -->
         <div class="features">
           <div class="feature-card">
+            <div class="feature-icon">🌡️</div>
+            <div class="feature-title">Global Weather</div>
+            <p class="feature-text">
+              Real-time weather for any city worldwide. Temperature in °C or °F, 
+              humidity, wind speed, and 7-day forecasts.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-title">Grid Load Forecast</div>
+            <p class="feature-text">
+              14-day electricity demand predictions for SCE using Gradient Boosting 
+              with 2.26% MAPE accuracy.
+            </p>
+          </div>
+          <div class="feature-card">
             <div class="feature-icon">📊</div>
-            <div class="feature-title">Real-Time Weather</div>
+            <div class="feature-title">ML Analytics</div>
             <p class="feature-text">
-              Search any city for current conditions, humidity, wind speed, and
-              more.
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🔮</div>
-            <div class="feature-title">ML Forecasts</div>
-            <p class="feature-text">
-              SARIMA model trained on 3 years of Tokyo data for accurate 14-day
-              predictions.
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">📈</div>
-            <div class="feature-title">Interactive Charts</div>
-            <p class="feature-text">
-              Visualize temperature trends with confidence intervals and
-              detailed analytics.
+              Feature importance, cross-validation results, and model performance 
+              comparisons with interactive charts.
             </p>
           </div>
         </div>
 
-        <!-- Stats -->
         <div class="stats">
           <div class="stat-item">
-            <div class="stat-number">3</div>
-            <div class="stat-label">Years of Data</div>
+            <div class="stat-number">315K</div>
+            <div class="stat-label">Data Points</div>
           </div>
           <div class="stat-item">
-            <div class="stat-number">1057</div>
-            <div class="stat-label">Training Days</div>
+            <div class="stat-number">573</div>
+            <div class="stat-label">MAE (MW)</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">2.26%</div>
+            <div class="stat-label">MAPE</div>
           </div>
           <div class="stat-item">
             <div class="stat-number">14</div>
@@ -261,19 +305,44 @@ import Header from "../components/Header.jsx";
           </div>
         </div>
 
-        <!-- CTA Buttons -->
-        <div class="cta-buttons">
-          <a href="/forecast" class="btn btn-primary">
-            ✨ View ML Forecast
-          </a>
-          <a href="/table_charts" class="btn btn-secondary">
-            📊 Explore Weather Data
-          </a>
+        <!-- Glossary Section -->
+        <div class="glossary">
+          <h2>📖 What Do These Terms Mean?</h2>
+          <div class="glossary-grid">
+            <div class="glossary-item">
+              <div class="glossary-term">MW (Megawatt)</div>
+              <p class="glossary-def">A unit of electrical power. One megawatt can power about 750-1,000 homes. Southern California Edison for instance, serves around 15 million people, requiring roughly 20,000-28,000 MW during peak times.</p>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">MAE (Mean Absolute Error)</div>
+              <p class="glossary-def">How far off our predictions are on average. Our MAE of 573 MW means predictions are typically within 573 MW of actual demand—about 2% error for a grid this size.</p>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">MAPE (Mean Absolute % Error)</div>
+              <p class="glossary-def">The average prediction error as a percentage. At 2.26%, if we predict 25,000 MW demand, actual demand is usually within ~565 MW of that prediction.</p>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">Grid Load</div>
+              <p class="glossary-def">Total electricity demand on the power grid at any moment. It fluctuates based on time of day, weather, holidays, and seasons—higher on hot summer afternoons (AC usage), lower on mild weekend mornings.</p>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">Gradient Boosting</div>
+              <p class="glossary-def">A machine learning technique that combines many simple prediction models into one powerful model. It learns from its mistakes iteratively, making it excellent for complex patterns like energy demand.</p>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">Cross-Validation (CV)</div>
+              <p class="glossary-def">A method to test how well a model performs on unseen data. We train on past months and test on future months, repeating 5 times to ensure reliable accuracy estimates.</p>
+            </div>
+          </div>
         </div>
 
-        <!-- Footer -->
+        <div class="cta-buttons">
+          <a href="/forecast" class="btn btn-primary">⚡ Grid Forecast</a>
+          <a href="/table_charts" class="btn btn-secondary">🌍 Weather Data</a>
+        </div>
+
         <p class="footer-text">
-          Powered by Open-Meteo API, FastAPI, React, and SARIMA
+          Built with Python, scikit-learn, React & Astro
         </p>
       </div>
     </main>

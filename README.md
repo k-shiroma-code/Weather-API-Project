@@ -1,272 +1,170 @@
-# 🌤️ Weather API Project
+# ⚡ Weather & Energy Dashboard
 
-A full-stack weather forecasting application with real-time data and AI-powered SARIMA predictions for Tokyo.
+A full-stack web application featuring **global weather data** and **California grid load forecasting** using machine learning.
 
-## 📊 Features
+![Dashboard Preview](https://img.shields.io/badge/Status-Active-brightgreen) ![React](https://img.shields.io/badge/React-18-blue) ![Astro](https://img.shields.io/badge/Astro-4-purple) ![Python](https://img.shields.io/badge/Python-3.10-yellow)
 
-- **Real-time Weather Data** - Current conditions for any city via OpenWeather API
-- **SARIMA ML Forecasting** - 14-day temperature predictions using 5 years of historical data
-- **Interactive Dashboard** - Beautiful React/Astro frontend with charts and tables
-- **REST API** - FastAPI backend with multiple endpoints
-- **Historical Data Pipeline** - ETL pipeline fetching from Open-Meteo API
+---
 
-## 🏗️ Architecture
+## 🌟 Features
 
-```
-weather-api-project/
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Header.jsx
-│   │   │   ├── Table_Charts.jsx
-│   │   │   ├── Forecast.jsx
-│   │   │   └── SarimaForecast.jsx
-│   │   └── pages/
-│   │       ├── index.astro
-│   │       ├── table_charts.astro
-│   │       └── forecast.astro
-│   └── package.json
-│
-├── backend/
-│   ├── api/
-│   │   └── table_charts_main.py
-│   ├── ml/
-│   │   ├── data/
-│   │   │   ├── raw/
-│   │   │   └── processed/
-│   │   ├── models/
-│   │   ├── figures/
-│   │   ├── fetch_data.py
-│   │   ├── eda.py
-│   │   ├── train_model.py
-│   │   └── predict.py
-│   ├── app.py
-│   └── requirements.txt
-│
-└── README.md
-```
+### 🌍 Global Weather Dashboard
+- Real-time weather for any city worldwide
+- 7-day forecasts with temperature trends
+- Toggle between °C and °F
+- Interactive charts and data tables
 
-## 🚀 Quick Start
+### ⚡ Grid Load Forecasting
+- 14-day electricity demand predictions
+- **4 California service areas:** SCE, PG&E, SDG&E, VEA
+- **3 ML models:** Ridge Regression, Random Forest, Gradient Boosting
+- Cross-validation results and feature importance analysis
 
-### Prerequisites
-- Python 3.9+
-- Node.js 18+
-- Git
+---
 
-### Backend Setup
+## 📊 Model Performance
 
-```bash
-cd backend
-pip install -r requirements.txt
-```
+| Model | MAE (MW) | RMSE (MW) | MAPE |
+|-------|----------|-----------|------|
+| Ridge + Weather | 840.0 | 1,023.0 | 3.41% |
+| Random Forest | 576.9 | 751.1 | 2.29% |
+| **Gradient Boosting** | **573.2** | **724.8** | **2.26%** |
 
-### Frontend Setup
+*Validated using 5-fold expanding window cross-validation on 315,648 observations*
 
-```bash
-cd frontend/website
-npm install
-npm run dev
-```
-
-## 📈 ML Pipeline
-
-### 1. Fetch Data
-Fetches 5 years of historical weather data for Tokyo (2020-2024) from Open-Meteo API:
-
-```bash
-cd backend/ml
-python fetch_data.py
-```
-
-**Output:** `data/raw/tokyo_weather_raw.csv` (1819 records)
-
-### 2. Exploratory Data Analysis
-Analyzes data, creates visualizations, tests stationarity:
-
-```bash
-python eda.py
-```
-
-**Output:** 
-- Cleaned data: `data/processed/tokyo_weather_processed.csv`
-- 4 visualization PNG files in `figures/`
-
-### 3. Train SARIMA Model
-Finds optimal SARIMA parameters and trains the model (20-40 minutes):
-
-```bash
-python train_model.py
-```
-
-**Output:**
-- Trained model: `models/sarima_model.pkl`
-- Parameters: `models/sarima_params.pkl`
-- Results plot: `figures/04_sarima_results.png`
-
-### 4. Make Predictions
-Generate 14-day temperature forecasts:
-
-```bash
-python predict.py
-```
-
-## 🔌 API Endpoints
-
-### Weather Endpoints
-
-**Get current weather for a city:**
-```bash
-GET /weather?city=Tokyo
-```
-
-Response:
-```json
-{
-  "city": "Tokyo",
-  "temperature": 15.2,
-  "feels_like": 14.1,
-  "humidity": 65,
-  "wind_speed": 7.5,
-  "weather_desc": "partly cloudy"
-}
-```
-
-### SARIMA Forecast Endpoints
-
-**Get 14-day forecast:**
-```bash
-GET /sarima/forecast?days=14
-```
-
-Response:
-```json
-{
-  "location": "Tokyo",
-  "forecast_days": 14,
-  "predictions": [
-    {
-      "day": 1,
-      "date": "2025-01-01",
-      "forecast": 12.5,
-      "lower_ci": 10.2,
-      "upper_ci": 14.8
-    }
-  ]
-}
-```
-
-**Get model info:**
-```bash
-GET /sarima/info
-```
-
-## 🎨 Frontend Pages
-
-- **Home** (`/`) - Landing page with project overview
-- **Weather Dashboard** (`/table_charts`) - Real-time weather search and charts
-- **ML Forecast** (`/forecast`) - SARIMA predictions with interactive charts
-
-## 📊 Data Sources
-
-- **Open-Meteo Historical Forecast API** - Historical weather data (2020-2024)
-- **OpenWeather API** - Current weather conditions (any city)
-
-## 🧠 Model Details
-
-**SARIMA Parameters:**
-- Automatically determined by `auto_arima`
-- Typical: SARIMA(1,1,1)x(1,1,1,365)
-- Training data: 1789 days (2020-11-23)
-- Test data: 30 days (2024-11-24 to 2024-12-23)
-- Evaluation metrics: RMSE, MAE, MAPE
-
-**Features Used:**
-- `temperature_2m_max` - Daily maximum temperature
-- `temperature_2m_min` - Daily minimum temperature
-- `precipitation_sum` - Daily precipitation
-- `wind_speed_10m_max` - Maximum wind speed
-
-## 📝 Environment Variables
-
-Create a `.env` file in the backend directory:
-
-```
-OPENWEATHER_API_KEY=your_api_key_here
-```
+---
 
 ## 🛠️ Tech Stack
 
 **Frontend:**
-- Astro
-- React
-- Recharts
-- Tailwind CSS
+- React 18
+- Astro 4
+- Recharts (data visualization)
 
 **Backend:**
 - FastAPI
-- Python 3.9+
-- Pandas, NumPy
-- Statsmodels (SARIMA)
-- Scikit-learn
+- Python 3.10
+- scikit-learn
 
-**Data Pipeline:**
+**APIs:**
+- OpenWeather API
 - Open-Meteo API
-- Pandas, NumPy
-- Matplotlib, Seaborn
-- PMDarima (auto_arima)
-
-## 📦 Dependencies
-
-See `backend/requirements.txt` for full list. Key packages:
-- fastapi==0.127.0
-- uvicorn==0.40.0
-- pandas==2.3.3
-- statsmodels==0.14.0
-- pmdarima==2.0.4
-- scikit-learn==1.7.2
-- requests==2.32.5
-
-## 🚀 Running the Project
-
-**Terminal 1 - Backend API:**
-```bash
-cd backend
-uvicorn app:app --reload --port 8000
-```
-
-**Terminal 2 - Frontend:**
-```bash
-cd frontend/website
-npm run dev
-```
-
-**Terminal 3 - ML Training (optional):**
-```bash
-cd backend/ml
-python train_model.py
-```
-
-Visit http://localhost:4321 for the frontend and http://localhost:8000/docs for API docs.
-
-## 📚 Learning Resources
-
-- [SARIMA Overview](https://otexts.com/fpp2/arima.html)
-- [Open-Meteo API Docs](https://open-meteo.com/en/docs)
-- [FastAPI Tutorial](https://fastapi.tiangolo.com/)
-- [Astro Documentation](https://docs.astro.build/)
-
-## 🤝 Contributing
-
-Feel free to fork and submit PRs for improvements!
-
-## 📄 License
-
-MIT License - See LICENSE file for details
-
-## 👤 Author
-
-Kyle Shiroma - [GitHub](https://github.com/k-shiroma-code)
 
 ---
 
-**Last Updated:** December 2024
+## 📁 Project Structure
+
+```
+├── src/
+│   ├── components/
+│   │   ├── Header.jsx         # Navigation bar
+│   │   ├── Forecast.jsx       # Grid load forecasting
+│   │   └── Table_Charts.jsx   # Weather dashboard
+│   └── pages/
+│       ├── index.astro        # Home page
+│       ├── Forecast.astro     # Forecast page
+│       └── table_charts.astro # Weather page
+├── app.py                     # FastAPI backend
+├── package.json
+└── README.md
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Python 3.10+
+- OpenWeather API key
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/k-shiroma-code/Weather-API-Project.git
+   cd Weather-API-Project
+   ```
+
+2. **Install frontend dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Install backend dependencies**
+   ```bash
+   pip install fastapi uvicorn requests python-dotenv
+   ```
+
+4. **Set up environment variables**
+   ```bash
+   echo "OPENWEATHER_API_KEY=your_api_key_here" > .env
+   ```
+
+5. **Run the backend**
+   ```bash
+   uvicorn app:app --reload --port 8000
+   ```
+
+6. **Run the frontend** (in a new terminal)
+   ```bash
+   npm run dev
+   ```
+
+7. **Open** http://localhost:4321
+
+---
+
+## 📖 Glossary
+
+| Term | Definition |
+|------|------------|
+| **MW (Megawatt)** | Unit of power. 1 MW powers ~750-1,000 homes |
+| **MAE** | Mean Absolute Error - average prediction error in MW |
+| **MAPE** | Mean Absolute Percentage Error - error as a percentage |
+| **Grid Load** | Total electricity demand at any moment |
+| **Gradient Boosting** | ML technique combining multiple models iteratively |
+| **Cross-Validation** | Method to test model performance on unseen data |
+
+---
+
+## 🏢 Service Areas
+
+| Area | Region | Population | Avg Load |
+|------|--------|------------|----------|
+| **SCE** | Southern California | 15 million | ~24,000 MW |
+| **PG&E** | Northern & Central CA | 16 million | ~18,000 MW |
+| **SDG&E** | San Diego Area | 3.7 million | ~4,500 MW |
+| **VEA** | Nevada/CA Border | 45,000 | ~200 MW |
+
+---
+
+## 📈 Data Source
+
+- **Grid Data:** [Kaggle - California ISO](https://www.kaggle.com/) (315,648 observations, 2019-2021)
+- **Weather Data:** OpenWeather API, Open-Meteo API
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to open an issue or submit a pull request.
+
+---
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+## 👤 Author
+
+**K. Shiroma**
+- GitHub: [@k-shiroma-code](https://github.com/k-shiroma-code)
+
+---
+
+<p align="center">
+  Built with ☕ and ⚡
+</p>
